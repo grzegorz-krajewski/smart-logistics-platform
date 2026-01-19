@@ -6,12 +6,26 @@ from app.models.pallet import Pallet
 from app.schemas.pallet import PalletCreate, PalletResponse
 from app.models.dock import Dock
 from app.schemas.dock import DockCreate, DockResponse
+from app.redis_client import redis_client
 
 app = FastAPI(title="Smart Logistics Platform API")
 
+# Dodaj import na górze
+from app.redis_client import redis_client
+
+# Zaktualizuj endpoint POST /pallets/
 @app.post("/pallets/", response_model=PalletResponse, tags=["Pallets"])
 async def create_pallet(pallet_data: PalletCreate, db: AsyncSession = Depends(get_db)):
-    # 1. Sprawdź czy paleta o tym barcodzie już istnieje (Unique Check)
+    # --- LOGIKA REDIS (Ochrona przed Wi-Fi lags) ---
+    redis_key = f"scan_lock:{pallet_data.barcode}"
+    
+    # Próbujemy ustawić klucz w Redisie na 10 sekund (NX = set if not exists)
+    is_new_scan = await redis_client.set(redis_key, "locked", ex=10, nx=True)
+    
+    if not is_new_scan:
+        # Jeśli klucz już był, to znaczy że to duplikat wysłany przez skaner
+        raise HTTPException(status_code=400, detail="Duplicate scan detected. Please wait.")
+
     query = select(Pallet).where(Pallet.barcode == pallet_data.barcode)
     result = await db.execute(query)
     existing_pallet = result.scalar_one_or_none()
