@@ -14,3 +14,5 @@ class Pallet(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     current_dock_id = Column(String, ForeignKey("docks.id"), nullable=True)
     dock = relationship("Dock")
+    shipment_id = Column(String, ForeignKey("shipments.id"), nullable=True)
+
