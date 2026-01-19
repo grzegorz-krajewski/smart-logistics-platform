@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+class PalletScanToDock(BaseModel):
+    barcode: str
+    dock_number: str
+    
 # To, co skaner wysyła do nas
 class PalletCreate(BaseModel):
     barcode: str
