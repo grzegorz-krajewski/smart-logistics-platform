@@ -17,6 +17,8 @@ class PalletResponse(BaseModel):
     barcode: str
     status: str
     weight: Optional[int] = None
+    current_dock_id: Optional[str] = None
+    shipment_id: Optional[str] = None 
     created_at: datetime
 
     class Config:
