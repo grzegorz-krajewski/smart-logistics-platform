@@ -1,0 +1,18 @@
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+
+# To, co skaner wysyła do nas
+class PalletCreate(BaseModel):
+    barcode: str
+    weight: Optional[int] = None
+
+# To, co API wysyła z powrotem do skanera (z ID i datą)
+class PalletResponse(BaseModel):
+    id: str
+    barcode: str
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
