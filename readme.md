@@ -2,6 +2,8 @@
 
 System backendowy klasy TMS/WMS zbudowany w **FastAPI** i **Python 3.12**, rozwiązujący krytyczne problemy operacyjne w branży TSL.
 
+![alt text](https://github.com/grzegorz-krajewski/smart-logistics-platform/releases/download/0.3.0/Dashboard.png)
+
 ## 🚀 Rozwiązywane Problemy (Case Studies)
 
 Projekt powstał w oparciu o 13-letnie doświadczenie w IT oraz praktykę w logistyce transportu ciężkiego (Cat. C).
