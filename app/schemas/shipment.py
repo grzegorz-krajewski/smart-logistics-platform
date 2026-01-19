@@ -15,6 +15,7 @@ class ShipmentResponse(BaseModel):
     origin: str
     destination: str
     status: ShipmentStatus
+    max_weight_capacity: int
     created_at: datetime
 
     class Config:
