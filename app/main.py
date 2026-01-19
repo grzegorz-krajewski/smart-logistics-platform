@@ -7,7 +7,6 @@ from app.schemas.pallet import PalletCreate, PalletResponse
 
 app = FastAPI(title="Smart Logistics Platform API")
 
-# Twoja pierwsza "produkcyjna" funkcja asynchroniczna
 @app.post("/pallets/", response_model=PalletResponse, tags=["Pallets"])
 async def create_pallet(pallet_data: PalletCreate, db: AsyncSession = Depends(get_db)):
     # 1. Sprawdź czy paleta o tym barcodzie już istnieje (Unique Check)
@@ -30,7 +29,6 @@ async def create_pallet(pallet_data: PalletCreate, db: AsyncSession = Depends(ge
     
     return new_pallet
 
-# Dodajmy też listowanie palet, żebyś widział co jest w bazie
 @app.get("/pallets/", response_model=list[PalletResponse], tags=["Pallets"])
 async def get_all_pallets(db: AsyncSession = Depends(get_db)):
     query = select(Pallet)
