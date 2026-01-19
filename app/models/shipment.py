@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import Column, String, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, String, DateTime, Enum as SQLEnum, Integer
 from sqlalchemy.sql import func
 from app.database import Base
 import uuid
@@ -18,5 +18,5 @@ class Shipment(Base):
     origin = Column(String, nullable=False)      # Punkt A
     destination = Column(String, nullable=False) # Punkt B
     status = Column(SQLEnum(ShipmentStatus), default=ShipmentStatus.PENDING)
-    
+    max_weight_capacity = Column(Integer, default=12000, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
