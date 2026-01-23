@@ -7,6 +7,7 @@ from app.models.dock import Dock
 from app.models.shipment import Shipment
 from app.schemas.pallet import PalletCreate, PalletResponse, PalletScanToDock
 from app.redis_client import redis_client
+from app.services.ai_engine import ai_engine
 
 router = APIRouter()
 
@@ -104,4 +105,26 @@ async def scan_to_dock(data: PalletScanToDock, db: AsyncSession = Depends(get_db
         "message": "Załadunek dozwolony", 
         "current_total_weight": new_total_weight,
         "capacity_left": shipment.max_weight_capacity - new_total_weight
+    }
+
+@router.get("/{barcode}/ai-check", tags=["Gen-AI"])
+async def ai_check_pallet(barcode: str, db: AsyncSession = Depends(get_db)):
+    # 1. Pobierz dane palety z bazy
+    query = select(Pallet).where(Pallet.barcode == barcode)
+    result = await db.execute(query)
+    pallet = result.scalar_one_or_none()
+    
+    if not pallet:
+        raise HTTPException(status_code=404, detail="Paleta nie znaleziona")
+    
+    # 2. Wywołaj analizę AI (pobiera dane z modelu)
+    analysis = await ai_engine.analyze_pallet_safety(
+        barcode=pallet.barcode,
+        weight=pallet.weight or 0,
+        status=pallet.status
+    )
+    
+    return {
+        "barcode": barcode,
+        "ai_analysis": analysis
     }
