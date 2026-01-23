@@ -39,11 +39,11 @@ git add .
 git commit -m "feat: short description #task_number"
 git push origin main
 
-### Jak to szybko wdrożyć:
+### Dokumentacja:
 1. W VS Code stwórz plik `docs/setup_guide.md`.
 2. Wklej powyższą treść i zapisz.
 3. W terminalu: 
    ```bash
    git add docs/setup_guide.md
-   git commit -m "docs: create comprehensive setup guide for development #1"
+   git commit -m "docs: create comprehensive setup guide for development"
    git push origin main
