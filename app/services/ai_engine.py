@@ -15,7 +15,7 @@ class LogisticsAI:
         # Klient OpenAI (zadziała, gdy w .env podasz klucz)
         self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
-        # Adres lokalnej Ollamy na Twoim Macu
+        # Adres lokalnej Ollamy
         self.ollama_url = "http://localhost:11434/api/generate"
 
     async def analyze_pallet_safety(self, barcode: str, weight: int, status: str):
@@ -38,7 +38,6 @@ class LogisticsAI:
             except Exception as e:
                 return f"Błąd OpenAI: {str(e)}"
 
-        # 3. TRYB OLLAMA (Lokalnie na M1 - darmowe AI w niedzielę)
         if self.mode == "ollama":
             try:
                 async with httpx.AsyncClient() as client:
@@ -56,16 +55,13 @@ class LogisticsAI:
 
         return "Nieznany tryb pracy AI."
 
-    # app/services/ai_engine.py
-
     async def analyze_warehouse_state(self, docks_data: list, shipments_data: list):
-
         docks_info = "\n".join([f"- Rampa {d.number}: {'ZAJĘTA' if d.is_occupied else 'WOLNA'}" for d in docks_data])
         ship_info = "\n".join([f"- Trasa {s.reference_number} do {s.destination}: {s.status}" for s in shipments_data])
 
         prompt = f"""
-        [INST] Jesteś ekspertem ds. optymalizacji magazynu. 
-        Oto aktualny stan obiektu:
+        [INST] Jesteś ekspertem logistyki i kierownikiem polskiego magazynu. 
+        Przeanalizuj poniższy stan obiektu i odpowiedz WYŁĄCZNIE W JĘZYKU POLSKIM.
         
         RAMPY:
         {docks_info}
@@ -73,10 +69,10 @@ class LogisticsAI:
         AKTYWNE TRASY:
         {ship_info}
         
-        Zrób szybką analizę (max 3 punkty):
-        1. Czy mamy zatory (wąskie gardła)?
-        2. Czy są wolne rampy na nowe trasy?
-        3. Co jest priorytetem na najbliższą godzinę? [/INST]
+        Zrób krótką analizę (max 3 konkretne punkty):
+        1. Czy są wąskie gardła (brak wolnych ramp) (weź pod uwadę rampe oznaczoną WOLNA)?
+        2. Czy trasy oczekujące mają przypisane miejsce?
+        3. Jaki jest najważniejszy krok na teraz? [/INST]
         """
 
         async with httpx.AsyncClient() as client:
@@ -84,10 +80,13 @@ class LogisticsAI:
                 "model": "llama3",
                 "prompt": prompt,
                 "stream": False,
-                "options": {"num_predict": 150, "temperature": 0.2}
+                "options": {
+                    "num_predict": 200, 
+                    "temperature": 0.2
+                }
             }
             response = await client.post(self.ollama_url, json=payload, timeout=60.0)
-            return response.json().get("response") if response.status_code == 200 else "AI Busy..."
+            return response.json().get("response") if response.status_code == 200 else "Błąd: AI nie odpowiedziało."
 
 # Inicjalizacja silnika - na wyjeździe zostaw "mock"
 ai_engine = LogisticsAI(mode="mock")

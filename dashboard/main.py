@@ -6,13 +6,14 @@ st.set_page_config(page_title="LogTech Dashboard", layout="wide")
 
 st.title("🚚 Smart Logistics - Real-time Monitor")
 
-# Funkcja do pobierania danych z Twojego FastAPI
-def get_data(endpoint):
+# Funkcja do pobierania danych z FastAPI
+def get_data(endpoint, timeout=5.0):
     try:
-        response = httpx.get(f"http://127.0.0.1:8000{endpoint}")
+        response = httpx.get(f"http://127.0.0.1:8000{endpoint}", timeout=timeout)
         return response.json()
-    except:
-        return []
+    except Exception as e:
+        st.error(f"Błąd pobierania danych: {e}")
+        return None
 
 # --- SIDEBAR: Statystyki Ogólne ---
 st.sidebar.header("System Status")
@@ -58,3 +59,16 @@ pallets_data = get_data("/pallets/")
 if pallets_data:
     df = pd.DataFrame(pallets_data)
     st.table(df[['barcode', 'status', 'weight', 'created_at']].tail(10))
+
+# --- SEKCJA: AUDYT STRATEGICZNY AI ---
+st.divider()
+st.subheader("🤖 Audyt Magazynu (Llama)")
+if st.button('Uruchom Audyt AI'):
+    with st.spinner('Llama 3 analizuje dane...'):
+        audit_data = get_data("/shipments/ai-audit", timeout=60.0)
+        
+        if audit_data and 'warehouse_health_check' in audit_data:
+            st.info(audit_data['warehouse_health_check'])
+            st.caption(f"Analiza wygenerowana: {audit_data.get('timestamp')}")
+        else:
+            st.error("Nie udało się pobrać audytu AI.")
