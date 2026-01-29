@@ -7,8 +7,9 @@ import uuid
 class ShipmentStatus(str, enum.Enum):
     PENDING = "PENDING"
     IN_PROGRESS = "IN_PROGRESS"
-    COLLECTED = "COLLECTED"  # Towar odebrany (Kluczowe dla punktu 5!)
+    COLLECTED = "COLLECTED" 
     CANCELLED = "CANCELLED"
+    SHIPPED = "SHIPPED"
 
 class Shipment(Base):
     __tablename__ = "shipments"
