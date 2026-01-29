@@ -76,3 +76,26 @@ async def get_warehouse_audit(db: AsyncSession = Depends(get_db)):
         "warehouse_health_check": report,
         "timestamp": "Real-time from Llama3"
     }
+
+@router.post("/{shipment_id}/release", tags=["Operations"])
+async def release_dock_and_start_transport(shipment_id: str, db: AsyncSession = Depends(get_db)):
+    # 1. Pobierz trasę
+    shipment = await db.get(Shipment, shipment_id)
+    if not shipment:
+        raise HTTPException(status_code=404, detail="Trasa nie znaleziona")
+
+    # 2. Znajdź dok przypisany do tej trasy
+    query = select(Dock).where(Dock.current_shipment_id == shipment.id)
+    result = await db.execute(query)
+    dock = result.scalar_one_or_none()
+
+    if not dock:
+        raise HTTPException(status_code=400, detail="Trasa nie jest przypisana do żadnej rampy")
+
+    # 3. Logika biznesowa: Zwolnienie zasobów
+    dock.is_occupied = False
+    dock.current_shipment_id = None
+    shipment.status = "SHIPPED"
+
+    await db.commit()
+    return {"status": "success", "message": f"Rampa {dock.number} zwolniona. Trasa {shipment.reference_number} w drodze."}

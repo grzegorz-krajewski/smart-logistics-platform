@@ -11,7 +11,7 @@ Projekt powstał w oparciu o 13-letnie doświadczenie w IT oraz praktykę w logi
 1.  **Resilient Scanner (Problem Wi-Fi):** Mechanizm ochrony przed duplikatami skanów przy zrywającym się połączeniu (implementacja **Redis Idempotency**).
 2.  **Real-time Handover:** Precyzyjne zarządzanie relacją Paleta-Rampa (Fine-grained Locking) zapobiegające "wyścigom" danych (Race Conditions).
 3.  **Weight Guard Engine:** Automatyczna kontrola masy całkowitej ładunku, zapobiegająca przeładowaniu pojazdów (Data Integrity).
-4.  **Gen-AI Assistant (v0.5.0):** Inteligentny asystent analizujący bezpieczeństwo palet i statusy operacyjne w czasie rzeczywistym (Llama 3 / GPT-4o).
+4.  **Gen-AI Assistant (v0.6.0):** Inteligentny asystent analizujący bezpieczeństwo palet i statusy operacyjne w czasie rzeczywistym (Llama 3 / GPT-4o).
 
 ## 🛠 Tech Stack
 
