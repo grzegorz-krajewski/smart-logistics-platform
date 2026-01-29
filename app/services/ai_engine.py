@@ -61,5 +61,38 @@ class LogisticsAI:
             
         return "Nieznany tryb pracy AI."
 
+    # app/services/ai_engine.py
+
+    async def analyze_warehouse_state(self, docks_data: list, shipments_data: list):
+
+        docks_info = "\n".join([f"- Rampa {d.number}: {'ZAJĘTA' if d.is_occupied else 'WOLNA'}" for d in docks_data])
+        ship_info = "\n".join([f"- Trasa {s.reference_number} do {s.destination}: {s.status}" for s in shipments_data])
+
+        prompt = f"""
+        [INST] Jesteś ekspertem ds. optymalizacji magazynu. 
+        Oto aktualny stan obiektu:
+        
+        RAMPY:
+        {docks_info}
+        
+        AKTYWNE TRASY:
+        {ship_info}
+        
+        Zrób szybką analizę (max 3 punkty):
+        1. Czy mamy zatory (wąskie gardła)?
+        2. Czy są wolne rampy na nowe trasy?
+        3. Co jest priorytetem na najbliższą godzinę? [/INST]
+        """
+
+        async with httpx.AsyncClient() as client:
+            payload = {
+                "model": "llama3",
+                "prompt": prompt,
+                "stream": False,
+                "options": {"num_predict": 150, "temperature": 0.2}
+            }
+            response = await client.post(self.ollama_url, json=payload, timeout=60.0)
+            return response.json().get("response") if response.status_code == 200 else "AI Busy..."
+
 # Inicjalizacja silnika - na wyjeździe zostaw "mock"
 ai_engine = LogisticsAI(mode="ollama")

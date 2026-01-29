@@ -5,6 +5,8 @@ from app.database import get_db
 from app.redis_client import redis_client
 from app.models.shipment import Shipment, ShipmentStatus
 from app.schemas.shipment import ShipmentCreate, ShipmentResponse
+from app.services.ai_engine import ai_engine
+from app.models.dock import Dock
 
 router = APIRouter()
 
@@ -64,3 +66,13 @@ async def mark_as_collected(ref_number: str, db: AsyncSession = Depends(get_db))
     await db.commit()
     return {"message": f"Shipment {ref_number} marked as COLLECTED by another driver"}
 
+@router.get("/ai-audit", tags=["Gen-AI"])
+async def get_warehouse_audit(db: AsyncSession = Depends(get_db)):
+    docks = (await db.execute(select(Dock))).scalars().all()
+    shipments = (await db.execute(select(Shipment))).scalars().all()
+    report = await ai_engine.analyze_warehouse_state(docks, shipments)
+    
+    return {
+        "warehouse_health_check": report,
+        "timestamp": "Real-time from Llama3"
+    }
