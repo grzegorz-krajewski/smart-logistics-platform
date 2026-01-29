@@ -15,8 +15,8 @@ class LogisticsAI:
         # Klient OpenAI (zadziała, gdy w .env podasz klucz)
         self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
-        # Adres lokalnej Ollamy
-        self.ollama_url = "http://localhost:11434/api/generate"
+        # Adres lokalnej Ollamy na Twoim Macu
+        self.ollama_url = "http://127.0.0.1:11434/api/generate"
 
     async def analyze_pallet_safety(self, barcode: str, weight: int, status: str):
         # 1. TRYB MOCK (Na wyjazd - zero transferu, zero kosztów)
@@ -43,16 +43,21 @@ class LogisticsAI:
                 async with httpx.AsyncClient() as client:
                     payload = {
                         "model": "llama3",
-                        "prompt": f"Jesteś ekspertem logistyki. Czy paleta {barcode} ({weight}kg) jest bezpieczna? Odpowiedz krótko.",
-                        "stream": False
+                        "prompt": f"Jesteś szybkim asystentem WMS. Paleta {barcode}, waga {weight}kg, status {status}. Czy jest OK? Odpowiedz w 5 słowach.",
+                        "stream": False,
+                        "options": {
+                            "num_predict": 20,     # Bardzo krótka odpowiedź = szybka odpowiedź
+                            "temperature": 0.2,    # Mniejsza kreatywność = większa szybkość
+                            "top_k": 10            # Ogranicza wybór słów
+                        }
                     }
-                    response = await client.post(self.ollama_url, json=payload, timeout=30.0)
+                    response = await client.post(self.ollama_url, json=payload, timeout=60.0)
                     if response.status_code == 200:
                         return response.json().get("response")
-                    return "Ollama jest zainstalowana, ale model Llama3 nie jest uruchomiony."
-            except Exception:
-                return "Błąd: Nie znaleziono lokalnego serwera Ollama. Czy jest włączony?"
-
+                    return "Błąd Ollama"
+            except Exception as e:
+                return f"Błąd połączenia: {str(e)}"
+            
         return "Nieznany tryb pracy AI."
 
     async def analyze_warehouse_state(self, docks_data: list, shipments_data: list):
@@ -89,4 +94,4 @@ class LogisticsAI:
             return response.json().get("response") if response.status_code == 200 else "Błąd: AI nie odpowiedziało."
 
 # Inicjalizacja silnika - na wyjeździe zostaw "mock"
-ai_engine = LogisticsAI(mode="mock")
+ai_engine = LogisticsAI(mode="ollama")

@@ -6,7 +6,7 @@ System backendowy klasy TMS/WMS zbudowany w **FastAPI** i **Python 3.12**, rozwi
 
 ## 🚀 Rozwiązywane Problemy (Case Studies)
 
-Projekt powstał w oparciu o 13-letnie doświadczenie w IT oraz praktykę w logistyce transportu ciężkiego (Cat. C).
+Projekt powstał w oparciu o rozwijające się potrzeby w logistyce transportu ciężkiego.
 
 1.  **Resilient Scanner (Problem Wi-Fi):** Mechanizm ochrony przed duplikatami skanów przy zrywającym się połączeniu (implementacja **Redis Idempotency**).
 2.  **Real-time Handover:** Precyzyjne zarządzanie relacją Paleta-Rampa (Fine-grained Locking) zapobiegające "wyścigom" danych (Race Conditions).
