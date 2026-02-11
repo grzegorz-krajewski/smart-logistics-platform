@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
+from app.deps import get_current_user
+from app.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from app.database import get_db
@@ -43,6 +45,10 @@ async def create_pallet(pallet_data: PalletCreate, db: AsyncSession = Depends(ge
     
     return new_pallet
     pass 
+
+@router.get("/user")
+async def list_shipments(current_user: User = Depends(get_current_user)):
+    return {"ok": True, "user": current_user.username}
 
 @router.get("/", response_model=list[PalletResponse], tags=["Pallets"])
 async def get_all_pallets(db: AsyncSession = Depends(get_db)):
